@@ -1,5 +1,6 @@
 import router from '@adonisjs/core/services/router'
 const UsersController = () => import('#controllers/users_controller')
+const ClientsController = () => import('#controllers/clients_controller')
 
 router.get('/', async () => {
   return {
@@ -11,3 +12,5 @@ router.get('/api/users/list', [UsersController, 'index']);
 router.post('/api/users/save', [UsersController, 'store']);
 router.put('/api/users/:id', [UsersController, 'update']);
 router.delete('/api/users/:id', [UsersController, 'destroy']);
+
+router.post('/api/clients/save', [ClientsController, 'store']);

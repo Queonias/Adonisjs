@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import Client from '../models/client.js';
 
 export default class ClientsController {
   /**
@@ -12,14 +13,12 @@ export default class ClientsController {
   async create({ }: HttpContext) { }
 
   /**
-   * Handle form submission for the create action
+   * Salvar
    */
-  async store({ request }: HttpContext) { }
-
-  /**
-   * Show individual record
-   */
-  async show({ params }: HttpContext) { }
+  async store({ request }: HttpContext) {
+    const user: Client = await Client.create(request.all());
+    return user;
+  }
 
   /**
    * Edit individual record
