@@ -11,8 +11,13 @@ export default class ClientsController {
   /**
    * Display a list of resource
    */
-  async index({ }: HttpContext) {
-
+  async index({ response }: HttpContext) {
+    try {
+      const clients = await Client.query().select('id', 'name', 'cpf').orderBy('id', 'asc')
+      return response.status(200).json(clients)
+    } catch (error) {
+      return response.status(400).json({ message: 'Error fetching clients', error })
+    }
   }
 
   /**
@@ -93,6 +98,47 @@ export default class ClientsController {
       // Rollback em caso de erro
       await trx.rollback()
       return response.status(400).json({ message: 'Error saving client', error })
+    }
+  }
+
+  async show({ params, request, response }: HttpContext) {
+    // Obtém o ID do cliente dos parâmetros da rota
+    const clientId = params.id
+
+    // Obtém os parâmetros de mês e ano da query string (para filtragem)
+    const { month, year } = request.qs()
+
+    try {
+      // Tenta encontrar o cliente pelo ID, lança um erro se não encontrado
+      const client = await Client.findOrFail(clientId)
+
+      // Cria uma query para buscar as vendas do cliente, ordenadas pela data de venda em ordem decrescente
+      let salesQuery = Sale.query().where('client_id', clientId).orderBy('sale_date', 'desc')
+
+      // Se os parâmetros de mês e ano estão presentes, adiciona filtros para eles na query
+      if (month && year) {
+        salesQuery = salesQuery
+          .whereRaw('MONTH(sale_date) = ?', [month]) // Filtra pelo mês da venda
+          .andWhereRaw('YEAR(sale_date) = ?', [year]) // Filtra pelo ano da venda
+      }
+
+      // Executa a query e obtém as vendas
+      const sales = await salesQuery.exec()
+
+      // Retorna a resposta com o cliente e suas vendas
+      return response.status(200).json({
+        client: {
+          id: client.id,
+          name: client.name,
+          cpf: client.cpf,
+          createdAt: client.createdAt,
+          updatedAt: client.updatedAt
+        },
+        sales
+      })
+    } catch (error) {
+      // Em caso de erro, retorna uma resposta de erro
+      return response.status(400).json({ message: 'Error fetching client details', error })
     }
   }
 

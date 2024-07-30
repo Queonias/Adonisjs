@@ -13,4 +13,6 @@ router.post('/api/users/save', [UsersController, 'store']);
 router.put('/api/users/:id', [UsersController, 'update']);
 router.delete('/api/users/:id', [UsersController, 'destroy']);
 
+router.get('/api/clients/list', [ClientsController, 'index']);
 router.post('/api/clients/save', [ClientsController, 'store']);
+router.get('/api/clients/:id', [ClientsController, 'show']);
