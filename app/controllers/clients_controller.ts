@@ -150,10 +150,44 @@ export default class ClientsController {
   /**
    * Handle form submission for the edit action
    */
-  // async update({ params, request }: HttpContext) {}
+  async update({ params, request }: HttpContext) {
+    // Obtém o ID do cliente dos parâmetros da rota
+    const clientId = params.id
+  }
 
   /**
    * Delete record
    */
-  async destroy({ params }: HttpContext) { }
+  async destroy({ params, response }: HttpContext) {
+    const clientId = params.id
+
+    // Início da transação
+    const trx = await Database.transaction()
+
+    try {
+      // Obtém o cliente e todas as vendas associadas
+      const client = await Client.findOrFail(clientId)
+
+      // Exclui as vendas associadas
+      await Sale.query({ client: trx }).where('client_id', clientId).delete()
+
+      // Exclui os endereços associados
+      await Address.query({ client: trx }).where('client_id', clientId).delete()
+
+      // Exclui os telefones associados
+      await Phone.query({ client: trx }).where('client_id', clientId).delete()
+
+      // Exclui o cliente
+      await client.useTransaction(trx).delete()
+
+      // Commit da transação se tudo der certo
+      await trx.commit()
+
+      return response.status(200).json({ message: 'Client and related sales, addresses, and phones deleted successfully' })
+    } catch (error) {
+      // Rollback em caso de erro
+      await trx.rollback()
+      return response.status(400).json({ message: 'Error deleting client and related sales', error })
+    }
+  }
 }
