@@ -16,4 +16,5 @@ router.delete('/api/users/:id', [UsersController, 'destroy']);
 router.get('/api/clients/list', [ClientsController, 'index']);
 router.post('/api/clients/save', [ClientsController, 'store']);
 router.get('/api/clients/:id', [ClientsController, 'show']);
+router.put('/api/clients/:id', [ClientsController, 'update']);
 router.delete('/api/clients/:id', [ClientsController, 'destroy']);

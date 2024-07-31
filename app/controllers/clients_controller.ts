@@ -150,9 +150,83 @@ export default class ClientsController {
   /**
    * Handle form submission for the edit action
    */
-  async update({ params, request }: HttpContext) {
+  async update({ params, request, response }: HttpContext) {
     // Obtém o ID do cliente dos parâmetros da rota
     const clientId = params.id
+    const { name, cpf, addresses, phones, sales } = request.only(['name', 'cpf', 'addresses', 'phones', 'sales'])
+
+    // Início da transação
+    const trx = await Database.transaction()
+
+    try {
+      // Obtém o cliente
+      const client = await Client.findOrFail(clientId)
+      client.name = name
+      client.cpf = cpf
+      client.useTransaction(trx)
+      await client.save()
+
+      // Atualiza os endereços do cliente
+      if (addresses && addresses.length > 0) {
+        await Address.query({ client: trx }).where('client_id', clientId).delete()
+        for (const addressData of addresses) {
+          const address = new Address()
+          address.street = addressData.street
+          address.number = addressData.number
+          address.neighborhood = addressData.neighborhood
+          address.city = addressData.city
+          address.state = addressData.state
+          address.postal_code = addressData.zipCode
+          address.client_id = client.id
+          address.useTransaction(trx)
+          await address.save()
+        }
+      }
+
+      // Atualiza os telefones do cliente
+      if (phones && phones.length > 0) {
+        await Phone.query({ client: trx }).where('client_id', clientId).delete()
+        for (const phoneData of phones) {
+          const phone = new Phone()
+          phone.number = phoneData.number
+          phone.client_id = client.id
+          phone.useTransaction(trx)
+          await phone.save()
+        }
+      }
+
+
+      // Atualiza as vendas do cliente
+      if (sales && sales.length > 0) {
+        await Sale.query({ client: trx }).where('client_id', clientId).delete()
+        for (const saleData of sales) {
+          // Verifica se o produto existe
+          const product = await Product.find(saleData.productId)
+          if (!product) {
+            // Rollback se o produto não existir
+            await trx.rollback()
+            return response.status(400).json({ message: `Product with ID ${saleData.productId} does not exist` })
+          }
+          const sale = new Sale()
+          sale.product_id = saleData.productId
+          sale.quantity = saleData.quantity
+          sale.unit_price = saleData.totalPrice / saleData.quantity
+          sale.total_price = saleData.totalPrice
+          sale.client_id = client.id
+          sale.sale_date = DateTime.now()
+          sale.useTransaction(trx)
+          await sale.save()
+        }
+      }
+
+      // Commit da transação se tudo der certo
+      await trx.commit()
+      return response.status(200).json(client)
+    } catch (error) {
+      // Rollback em caso de erro
+      await trx.rollback()
+      return response.status(400).json({ message: 'Error updating client', error })
+    }
   }
 
   /**
