@@ -32,7 +32,14 @@ export default class ProductsController {
   /**
    * Show individual record
    */
-  async show({ params }: HttpContext) { }
+  async show({ params, response }: HttpContext) {
+    try {
+      const product = await Product.findOrFail(params.id)
+      return response.status(200).json(product)
+    } catch (error) {
+      return response.status(404).json({ message: 'Product not found', error })
+    }
+  }
 
   /**
    * Edit individual record
