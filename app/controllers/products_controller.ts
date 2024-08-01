@@ -1,10 +1,23 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import Client from '../models/client.js'
+import Address from '../models/address.js'
+import Phone from '../models/phone.js'
+import Sale from '../models/sale.js'
+import Product from '../models/product.js'
 
 export default class ProductsController {
   /**
    * Display a list of resource
    */
-  async index({ }: HttpContext) { }
+  async index({ response }: HttpContext) {
+    try {
+      const products = await Product.query().select('id', 'name', 'price').orderBy('name', 'asc')
+      return response.status(200).json(products)
+    } catch (error) {
+      return response.status(400).json({ message: 'Error fetching products', error })
+    }
+  }
+
 
   /**
    * Display form to create a new record
