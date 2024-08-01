@@ -16,3 +16,6 @@ router.delete('/api/clients/:id', [ClientsController, 'destroy']);
 
 router.get('/api/products/list', [ProductsController, 'index']);
 router.get('/api/products/:id', [ProductsController, 'show']);
+router.post('/api/products/save', [ProductsController, 'store']);
+router.put('/api/products/:id', [ProductsController, 'update']);
+router.delete('/api/products/:id', [ProductsController, 'destroy']);
