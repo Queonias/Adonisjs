@@ -1,38 +1,53 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import Database from '@adonisjs/lucid/services/db'
+import Client from '../models/client.js'
+import Product from '../models/product.js'
+import Sale from '../models/sale.js'
+import { DateTime } from 'luxon'
 
 export default class SalesController {
   /**
-   * Display a list of resource
+   * Create a new sale
    */
-  async index({ }: HttpContext) { }
+  async store({ request, response }: HttpContext) {
+    const trx = await Database.transaction()
+    try {
+      const { clientId, productId, quantity } = request.only(['clientId', 'productId', 'quantity'])
+      // Verifica se o cliente existe
+      const client: Client | null = await Client.find(clientId)
+      if (!client) {
+        await trx.rollback()
+        return response.status(404).json({ message: 'Client not found' })
+      }
 
-  /**
-   * Display form to create a new record
-   */
-  async create({ }: HttpContext) { }
+      // Verifica se o produto existe e não está deletado
+      const product = await Product.query().where('id', productId).andWhere('is_deleted', false).first()
+      if (!product) {
+        await trx.rollback()
+        return response.status(404).json({ message: 'Product not found or is deleted' })
+      }
 
-  /**
-   * Handle form submission for the create action
-   */
-  async store({ request }: HttpContext) { }
+      // Calcula os valores da venda
+      const unitPrice = product.price
+      const totalPrice = unitPrice * quantity
 
-  /**
-   * Show individual record
-   */
-  async show({ params }: HttpContext) { }
+      // Cria a venda
+      const sale = new Sale()
+      sale.client_id = clientId
+      sale.product_id = productId
+      sale.quantity = quantity
+      sale.unit_price = unitPrice
+      sale.total_price = totalPrice
+      sale.sale_date = DateTime.now()
+      sale.useTransaction(trx)
+      await sale.save()
 
-  /**
-   * Edit individual record
-   */
-  async edit({ params }: HttpContext) { }
+      await trx.commit()
+      return response.status(201).json(sale)
+    } catch (error) {
+      await trx.rollback()
+      return response.status(400).json({ message: 'Error creating sale', error })
+    }
 
-  /**
-   * Handle form submission for the edit action
-   */
-  // async update({ params, request }: HttpContext) {}
-
-  /**
-   * Delete record
-   */
-  async destroy({ params }: HttpContext) { }
+  }
 }
