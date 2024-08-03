@@ -4,10 +4,8 @@ const ClientsController = () => import('#controllers/clients_controller')
 const ProductsController = () => import('#controllers/products_controller')
 const SalesController = () => import('#controllers/sales_controller')
 
-router.get('/api/users/list', [UsersController, 'index']);
-router.post('/api/users/save', [UsersController, 'store']);
-router.put('/api/users/:id', [UsersController, 'update']);
-router.delete('/api/users/:id', [UsersController, 'destroy']);
+router.post('/api/users/signup', [UsersController, 'signup']);
+router.post('/api/users/login', [UsersController, 'login']);
 
 router.get('/api/clients/list', [ClientsController, 'index']);
 router.post('/api/clients/save', [ClientsController, 'store']);

@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Database from '@adonisjs/lucid/services/db'
 import { DateTime } from 'luxon'
+
+// Models
 import Client from '../models/client.js'
 import Address from '../models/address.js'
 import Phone from '../models/phone.js'
@@ -8,26 +10,16 @@ import Sale from '../models/sale.js'
 import Product from '../models/product.js'
 
 export default class ClientsController {
-  /**
-   * Display a list of resource
-   */
+
   async index({ response }: HttpContext) {
     try {
-      const clients = await Client.query().select('id', 'name', 'cpf').orderBy('id', 'asc')
+      const clients: Client[] = await Client.query().select('id', 'name', 'cpf').orderBy('id', 'asc')
       return response.status(200).json(clients)
     } catch (error) {
       return response.status(400).json({ message: 'Error fetching clients', error })
     }
   }
 
-  /**
-   * Display form to create a new record
-   */
-  async create({ }: HttpContext) { }
-
-  /**
-   * Salvar
-   */
   async store({ request, response }: HttpContext) {
     // Início da transação
     const trx = await Database.transaction()
@@ -71,7 +63,7 @@ export default class ClientsController {
       if (sales && sales.length > 0) {
         for (const saleData of sales) {
           // Verifica se o produto existe
-          const product = await Product.find(saleData.productId)
+          const product: Product | null = await Product.find(saleData.productId)
           if (!product) {
             // Rollback se o produto não existir
             await trx.rollback()
@@ -110,7 +102,7 @@ export default class ClientsController {
 
     try {
       // Tenta encontrar o cliente pelo ID, lança um erro se não encontrado
-      const client = await Client.findOrFail(clientId)
+      const client: Client = await Client.findOrFail(clientId)
 
       // Cria uma query para buscar as vendas do cliente, ordenadas pela data de venda em ordem decrescente
       let salesQuery = Sale.query().where('client_id', clientId).orderBy('sale_date', 'desc')
@@ -142,14 +134,6 @@ export default class ClientsController {
     }
   }
 
-  /**
-   * Edit individual record
-   */
-  async edit({ params }: HttpContext) { }
-
-  /**
-   * Handle form submission for the edit action
-   */
   async update({ params, request, response }: HttpContext) {
     // Obtém o ID do cliente dos parâmetros da rota
     const clientId = params.id
@@ -160,7 +144,7 @@ export default class ClientsController {
 
     try {
       // Obtém o cliente
-      const client = await Client.findOrFail(clientId)
+      const client: Client = await Client.findOrFail(clientId)
       client.name = name
       client.cpf = cpf
       client.useTransaction(trx)

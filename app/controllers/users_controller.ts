@@ -1,46 +1,51 @@
 import type { HttpContext } from '@adonisjs/core/http';
 import User from '../models/user.js';
+import hash from '@adonisjs/core/services/hash'
 
 export default class UsersController {
   /**
    * Display a list of resource
    */
-  async index({ }: HttpContext) {
-    return await User.all();
+  async signup({ request, response }: HttpContext) {
+    const { email, password } = request.only(['email', 'password'])
+
+
+    // Verifica se o usuário já existe
+    const existingUser = await User.findBy('email', email)
+    if (existingUser) {
+      return response.badRequest({ message: 'User already exists' })
+    }
+
+    // Cria o novo usuário
+    const user = new User()
+    user.email = email
+    user.password = password
+    await user.save()
+
+    return response.created({ message: 'User created successfully' })
   }
-
-
 
   /**
    * Salvar
    */
-  async store({ request }: HttpContext) {
-    const user: User = await User.create(request.all());
-    return user;
+  async login({ request, response, auth }: HttpContext) {
+    const { email, password } = request.all()
+    // Verifica se o usuário existe
+    const user = await User.verifyCredentials(email, password)
+    if (!user) {
+      return response.badRequest({ message: 'Invalid email or password' })
+    }
+
+    // Verifica a senha
+    const isSame = await hash.verify(user.password, password)
+    if (!isSame) {
+      return response.badRequest({ message: 'Invalid email or password' })
+    }
+
+    // Gera o token JWT
+    const token = await auth.use('jwt').generate(user)
+
+    return response.ok({ token })
   }
 
-  /**
-   * Handle form submission for the edit action
-   */
-  async update({ params, request }: HttpContext) {
-    const user: User | null = await User.find(params['id']);
-    if (user) {
-      user.email = request.input('email');
-      await user.save();
-      return user;
-    }
-    return 'User not found';
-  }
-
-  /**
-   * Delete record
-   */
-  async destroy({ params }: HttpContext) {
-    const user: User | null = await User.find(params['id']);
-    if (user) {
-      user.delete();
-      return user;
-    }
-    return 'User not found';
-  }
 }
