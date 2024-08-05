@@ -35,8 +35,8 @@ O banco de dados está estruturado com as seguintes tabelas e relacionamentos:
 1. Clone o repositório:
 
     ```bash
-    git clone <link_do_repositório>
-    cd <nome_do_projeto>
+    git clone git@github.com:Queonias/Teste-Tecnico-Back-end-da-BeTalent.git
+    cd Teste-Tecnico-Back-end-da-BeTalent
     ```
 
 2. Instale as dependências:
