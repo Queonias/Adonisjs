@@ -223,7 +223,7 @@ Authorization: Bearer {seu_token_aqui}
           "neighborhood": "Bairro B",
           "city": "Cidade C",
           "state": "Estado D",
-          "CEP": "12345-678"
+          "cep": "12345-678"
         }
       ],
       "phones": [
@@ -263,7 +263,7 @@ Authorization: Bearer {seu_token_aqui}
           "neighborhood": "Bairro Novo",
           "city": "Cidade Nova",
           "state": "Estado Novo",
-          "CEP": "87654-321"
+          "cep": "87654-321"
         }
       ],
       "phones": [
@@ -281,11 +281,11 @@ Authorization: Bearer {seu_token_aqui}
 
 **Exemplo de Resposta:**
 
-    ```json
+  ```json
     {
-      "message": "Cliente excluído com sucesso"
+      "message": "Clientes e vendas relacionadas, endereços e telefones excluídos com sucesso"
     }
-    ```
+  ```
 
 ### Produtos (Protegidas por autenticação)
 
@@ -295,7 +295,7 @@ Authorization: Bearer {seu_token_aqui}
 
 **Exemplo de Resposta:**
 
-    ```json
+  ```json
     [
       {
         "id": 1,
@@ -308,7 +308,7 @@ Authorization: Bearer {seu_token_aqui}
         "price": 200.00
       }
     ]
-    ```
+  ```
 
 #### Detalhar um Produto
 
@@ -316,7 +316,7 @@ Authorization: Bearer {seu_token_aqui}
 
 **Exemplo de Resposta:**
 
-    ```json
+  ```json
     {
       "id": 1,
       "name": "Produto 1",
@@ -324,7 +324,7 @@ Authorization: Bearer {seu_token_aqui}
       "price": 100.00,
       "is_deleted": false
     }
-    ```
+  ```
 
 #### Adicionar um Novo Produto
 
@@ -332,13 +332,14 @@ Authorization: Bearer {seu_token_aqui}
 
 **Body da Requisição:**
 
-    ```json
+  ```json
     {
+      "id": 1
       "name": "Produto 1",
       "description": "Descrição do Produto 1",
       "price": 100.00
     }
-    ```
+  ```
 
 #### Editar um Produto
 
@@ -346,13 +347,13 @@ Authorization: Bearer {seu_token_aqui}
 
 **Body da Requisição:**
 
-    ```json
+  ```json
     {
       "name": "Produto Atualizado",
       "description": "Descrição Atualizada",
       "price": 150.00
     }
-    ```
+  ```
 
 #### Exclusão Lógica de um Produto
 
@@ -360,11 +361,11 @@ Authorization: Bearer {seu_token_aqui}
 
 **Exemplo de Resposta:**
 
-    ```json
+  ```json
     {
       "message": "Produto excluído com sucesso"
     }
-    ```
+  ```
 
 ### Vendas (Protegidas por autenticação)
 
@@ -374,16 +375,13 @@ Authorization: Bearer {seu_token_aqui}
 
 **Body da Requisição:**
 
-    ```json
+  ```json
     {
-      "client_id": 1,
-      "product_id": 1,
-      "quantity": 2,
-      "unit_price": 100.00,
-      "total_price": 200.00,
-      "sale_date": "2024-01-01T00:00:00.000Z"
+      "clientId": 7,
+      "productId": 3,
+      "quantity": 2
     }
-    ```
+  ```
 
 ## Middleware de Autenticação
 
